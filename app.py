@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# --- SCHEDULER LOGIC (YOUR CORE CODE) ---
+# 1. PAGE CONFIG (Must be the very first Streamlit command)
+st.set_page_config(page_title="OS Scheduler Expert", layout="wide", page_icon="📟")
+
+# 2. SCHEDULER LOGIC
 class Scheduler:
     def __init__(self, processes):
         self.procs = processes
@@ -84,48 +87,41 @@ class Scheduler:
             else: results.append({**p, 'ct': time, 'tat': time - p['at'], 'wt': (time - p['at']) - p['bt']})
         return results, gantt
 
-# --- MODERN UI UPGRADE ---
-st.set_page_config(page_title="OS Scheduler Expert", layout="wide", page_icon="📟")
-
-# Professional Styling
-st.markdown("""
-    <style>
-    .main { background-color: #f5f7f9; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    [data-testid="stMetricValue"] { font-size: 1.8rem; color: #1f77b4; }
-    </style>
-    """, unsafe_allow_html=True)
-
+# 3. MODERN UI
 st.title("📟 CPU Scheduling Simulation Dashboard")
-st.info("Input process details to analyze and compare Operating System scheduling efficiency.")
+st.markdown("---")
 
-# 1. Configuration Section
 with st.container(border=True):
     c1, c2, c3 = st.columns([1, 2, 1])
     with c1:
-        num_proc = st.number_input("Number of Processes", 1, 10, 3)
+        num_proc = st.number_input("Process Count", 1, 10, 5)
     with c2:
-        algo_choice = st.segmented_control(
-            "Select Scheduling Algorithm",
-            options=["FCFS", "SJF", "SRTF (Preemptive)", "Round Robin"],
-            default="FCFS"
+        algo_choice = st.selectbox(
+            "Scheduling Algorithm",
+            options=["FCFS", "SJF", "SRTF (Preemptive)", "Round Robin"]
         )
     with c3:
         q = st.number_input("RR Quantum", 1, 10, 2)
 
-# 2. Process Input Grid
 st.subheader("📝 Process Entry")
-data = []
-cols = st.columns(num_proc)
-for i in range(num_proc):
-    with cols[i]:
-        with st.container(border=True):
-            st.markdown(f"**Process P{i+1}**")
-            at = st.number_input(f"Arrival", 0, 100, 0, key=f"at{i}")
-            bt = st.number_input(f"Burst", 1, 100, 2, key=f"bt{i}")
-            data.append({'id': f"P{i+1}", 'at': at, 'bt': bt})
+init_df = pd.DataFrame({
+    "id": [f"P{i+1}" for i in range(num_proc)],
+    "at": [i for i in range(num_proc)], 
+    "bt": [2 + i for i in range(num_proc)]
+})
 
-# 3. Calculation Logic
+edited_df = st.data_editor(
+    init_df,
+    column_config={
+        "id": st.column_config.TextColumn("Process ID", disabled=True),
+        "at": st.column_config.NumberColumn("Arrival Time", min_value=0),
+        "bt": st.column_config.NumberColumn("Burst Time", min_value=1),
+    },
+    hide_index=True, use_container_width=True
+)
+
+# 4. EXECUTION
+data = edited_df.to_dict('records')
 s = Scheduler(data)
 res_fcfs, g_fcfs = s.fcfs()
 res_sjf, g_sjf = s.sjf_non_preemptive()
@@ -139,47 +135,32 @@ mapping = {
     "Round Robin": (res_rr, g_rr)
 }
 current_res, current_gantt = mapping[algo_choice]
+res_df = pd.DataFrame(current_res)
 
-# 4. Result Tabs
-tab1, tab2 = st.tabs(["📊 Performance Analysis", "🏆 Algorithm Comparison"])
+# 5. VISUALIZATION
+t1, t2 = st.tabs(["📊 Analysis", "🏆 Comparison"])
 
-with tab1:
-    # Metric Summary
-    res_df = pd.DataFrame(current_res)
+with t1:
     m1, m2, m3 = st.columns(3)
-    m1.metric("Selected Algorithm", algo_choice)
-    m2.metric("Avg Waiting Time", f"{res_df['wt'].mean():.2f}ms")
-    m3.metric("Avg Turnaround Time", f"{res_df['tat'].mean():.2f}ms")
+    m1.metric("Selected Strategy", algo_choice)
+    m2.metric("Avg WT", f"{res_df['wt'].mean():.2f} ms")
+    m3.metric("Avg TAT", f"{res_df['tat'].mean():.2f} ms")
 
-    # Gantt Chart
-    st.subheader(f"Timeline Visualization: {algo_choice}")
     df_gantt = pd.DataFrame(current_gantt)
-    fig = px.timeline(df_gantt, x_start="Start", x_end="Finish", y="Task", color="Task", 
-                      template="plotly_white", color_discrete_sequence=px.colors.qualitative.Safe)
+    fig = px.timeline(df_gantt, x_start="Start", x_end="Finish", y="Task", color="Task",
+                      template="plotly_white")
     fig.layout.xaxis.type = 'linear'
     for i in range(len(fig.data)): 
         fig.data[i].x = [df_gantt.iloc[i]['Finish'] - df_gantt.iloc[i]['Start']]
     
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Process Table
     st.dataframe(res_df[['id', 'at', 'bt', 'ct', 'tat', 'wt']], use_container_width=True, hide_index=True)
 
-with tab2:
-    st.subheader("Global Performance Comparison")
-    comparison = {
+with t2:
+    comp_data = {
         "Algorithm": ["FCFS", "SJF", "SRTF", "RR"],
-        "Avg Waiting": [pd.DataFrame(res_fcfs)['wt'].mean(), pd.DataFrame(res_sjf)['wt'].mean(), 
-                        pd.DataFrame(res_srtf)['wt'].mean(), pd.DataFrame(res_rr)['wt'].mean()],
-        "Avg Turnaround": [pd.DataFrame(res_fcfs)['tat'].mean(), pd.DataFrame(res_sjf)['tat'].mean(), 
-                           pd.DataFrame(res_srtf)['tat'].mean(), pd.DataFrame(res_rr)['tat'].mean()]
+        "Wait Time": [pd.DataFrame(res_fcfs)['wt'].mean(), pd.DataFrame(res_sjf)['wt'].mean(), 
+                      pd.DataFrame(res_srtf)['wt'].mean(), pd.DataFrame(res_rr)['wt'].mean()]
     }
-    comp_df = pd.DataFrame(comparison)
-    
-    col_chart, col_table = st.columns([2, 1])
-    with col_chart:
-        fig_comp = px.bar(comp_df, x="Algorithm", y=["Avg Waiting", "Avg Turnaround"], 
-                          barmode="group", title="Comparative Metrics")
-        st.plotly_chart(fig_comp, use_container_width=True)
-    with col_table:
-        st.table(comp_df)
+    st.bar_chart(pd.DataFrame(comp_data).set_index("Algorithm"))
+    st.table(comp_data)
