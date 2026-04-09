@@ -7,8 +7,12 @@ A high-performance web-based simulator designed to visualize and compare various
 ## 🚀 Live Demo
 **View the App here:** https://cpu-scheduler-dedwtjcwkwrtjatk3txgpy.streamlit.app/ 
 
+<img width="1919" height="966" alt="Screenshot 2026-04-09 142648" src="https://github.com/user-attachments/assets/b5acf6aa-50fb-4339-80ce-4f6e8b127636" />
+<img width="1919" height="962" alt="Screenshot 2026-04-09 142702" src="https://github.com/user-attachments/assets/2caba1d9-6a1c-4043-81fc-0fd8cfe92eca" />
+<img width="1917" height="973" alt="Screenshot 2026-04-09 142712" src="https://github.com/user-attachments/assets/ec29ce9e-415f-4347-bf63-f0c158587a7e" />
+<img width="1919" height="965" alt="Screenshot 2026-04-09 142728" src="https://github.com/user-attachments/assets/669846df-8e1a-4529-b550-b26ebe2f3b37" />
 
----
+
 
 ## ✨ Features
 
