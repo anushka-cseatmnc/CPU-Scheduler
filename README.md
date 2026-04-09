@@ -6,7 +6,7 @@ A high-performance web-based simulator designed to visualize and compare various
 
 ## 🚀 Live Demo
 **View the App here:** https://cpu-scheduler-dedwtjcwkwrtjatk3txgpy.streamlit.app/ 
-*(Replace this link with your actual Streamlit Cloud URL once live!)*
+
 
 ---
 
