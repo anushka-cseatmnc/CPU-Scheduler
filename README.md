@@ -1,4 +1,4 @@
-# 🖥️ CPU Scheduling Simulator (OS Lab Assessment)
+# 🖥️ CPU Scheduling Simulator (OS)
 
 A high-performance web-based simulator designed to visualize and compare various CPU scheduling algorithms. This tool is built to help students and developers understand how Operating Systems manage process execution, timing, and resource allocation.
 
